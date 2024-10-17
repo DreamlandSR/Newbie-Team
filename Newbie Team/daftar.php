@@ -47,8 +47,10 @@ if (!empty($errors)) {
     }
 } else {
     // Menyiapkan dan mengeksekusi pernyataan
-    $stmt = $conn->prepare("INSERT INTO users (nama, password, sebagai, email) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $nama, password_hash($password, PASSWORD_DEFAULT), $role, $email);
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+$stmt = $conn->prepare("INSERT INTO users (nama, password, sebagai, email) VALUES (?, ?, ?, ?)");
+$stmt->bind_param("ssss", $nama, $hashedPassword, $role, $email);
+
 
     if ($stmt->execute()) {
         // Redirect ke halaman login setelah pendaftaran berhasil
@@ -57,7 +59,6 @@ if (!empty($errors)) {
     } else {
         echo "Pendaftaran Gagal: " . $stmt->error;
     }
-
     $stmt->close();
 }
 
