@@ -2,8 +2,8 @@
 session_start();
 $host = 'localhost';
 $db   = 'e_learning';
-$user = 'root'; // atau username sesuai database
-$pass = ''; // password MySQL (kosong jika default)
+$user = 'root'; // Sesuaikan dengan username database Anda
+$pass = ''; // Sesuaikan dengan password MySQL Anda
 
 $conn = new mysqli($host, $user, $pass, $db);
 
@@ -14,20 +14,34 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Cek apakah kedua field telah diisi
     if (isset($_POST['nama']) && isset($_POST['password'])) {
-        $username = $conn->real_escape_string($_POST['nama']);
-        $password = $conn->real_escape_string($_POST['password']);
+        $nama = $conn->real_escape_string($_POST['nama']);
+        $password = $_POST['password']; // Jangan escape password di sini karena akan diverifikasi
         
-        // Query untuk cek username dan password
-        $sql = "SELECT * FROM users WHERE username='$username' AND password='$password'";
+        // Query untuk cek username
+        $sql = "SELECT * FROM users WHERE nama='$nama'";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
-            // Login sukses
-            $_SESSION['nama'] = $username;
-            header("Location: admin.html"); // Ganti dengan halaman dashboard setelah login
-            exit();
+            // Ambil data user
+            $user = $result->fetch_assoc();
+
+                // Simpan nama dan sebagai ke session
+                $_SESSION['nama'] = $user['nama'];
+                $_SESSION['sebagai'] = $user['sebagai'];
+                
+                // Redirect berdasarkan "sebagai"
+                if ($user['sebagai'] === 'admin') {
+                    header("Location: admin.html"); // Halaman untuk admin
+                } else if ($user['sebagai'] === 'guru') {
+                    header("Location: guru.html"); // Halaman untuk user biasa
+                } else if ($user['sebagai'] === 'siswa') {
+                    header("Location: siswa.html"); // Halaman untuk user biasa
+                } else {
+                    header("Location: login.html?error=unknown_sebagai"); // Jika "sebagai" tidak diketahui
+                }
+                exit();
         } else {
-            // Login gagal, redirect ke login.html dengan pesan error
+            // Nama pengguna tidak ditemukan
             header("Location: login.html?error=wrong_credentials");
             exit();
         }
