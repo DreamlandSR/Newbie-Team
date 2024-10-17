@@ -25,6 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Ambil data user
             $user = $result->fetch_assoc();
 
+            // Verifikasi password menggunakan password_verify()
+            if (password_verify($password, $user['password'])) {
                 // Simpan nama dan sebagai ke session
                 $_SESSION['nama'] = $user['nama'];
                 $_SESSION['sebagai'] = $user['sebagai'];
@@ -33,13 +35,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($user['sebagai'] === 'admin') {
                     header("Location: admin.html"); // Halaman untuk admin
                 } else if ($user['sebagai'] === 'guru') {
-                    header("Location: guru.html"); // Halaman untuk user biasa
+                    header("Location: guru.html"); // Halaman untuk guru
                 } else if ($user['sebagai'] === 'siswa') {
-                    header("Location: siswa.html"); // Halaman untuk user biasa
+                    header("Location: siswa.html"); // Halaman untuk siswa
                 } else {
                     header("Location: login.html?error=unknown_sebagai"); // Jika "sebagai" tidak diketahui
                 }
                 exit();
+            } else {
+                // Password salah
+                header("Location: login.html?error=wrong_credentials");
+                exit();
+            }
         } else {
             // Nama pengguna tidak ditemukan
             header("Location: login.html?error=wrong_credentials");
